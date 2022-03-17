@@ -1,7 +1,6 @@
 import json
 import math
 import re
-import time
 
 import requests
 from bs4 import BeautifulSoup
@@ -16,6 +15,7 @@ class TvpInfo(BaseScraper):
     """
 
     def __init__(self):
+        BaseScraper.__init__(self)
         base_items_page = BeautifulSoup(requests.get('https://www.tvp.info/polska').text, 'html.parser')
         TvpInfo.total_items = int(re.search(r"\"items_total_count\" : (?P<count>[\d]+)", base_items_page.prettify())[
                                       'count'])
@@ -25,7 +25,7 @@ class TvpInfo(BaseScraper):
         TvpInfo.scraped_items_ids = self._get_scraped_ids()
 
         self.current_page = int(re.search(r"\"items_page\" : (?P<count>[\d]+)", base_items_page.prettify())['count'])
-        self.items = self._get_next_items()
+        self.process_current_items()
 
     def _get_next_items(self):
         if self.current_page >= TvpInfo.total_pages:
@@ -33,5 +33,13 @@ class TvpInfo(BaseScraper):
         items_page = BeautifulSoup(requests.get('https://www.tvp.info/polska?page={}'.format(self.current_page)).text,
                                    'html.parser')
         items = json.loads(items_page.prettify().split("\"items\":")[1].split(",\n\"items_total_count\"")[0])
+        items = [{'id': item['id'],
+                  'title': item['title'],
+                  'url': 'https://www.tvp.info' + item['url'],
+                  'lead': item['lead'],
+                  'img': item['image']['url'],
+                  'img_title': item['image']['title'],
+                  'time_released': item['publication_start'],
+                  'time_updated': item['release_date']} for item in items]
         self.current_page += 1
         return items

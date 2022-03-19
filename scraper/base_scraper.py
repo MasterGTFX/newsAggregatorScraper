@@ -12,9 +12,12 @@ class BaseScraper:
     total_pages = 0
     scraped_items_ids = []
 
-    def __init__(self):
-        logging.debug(self.__class__.__name__ + " scraper has been initialized.")
+    def __init__(self, check_scraped_ids):
         self._items = []
+        self.check_scraped_ids = check_scraped_ids
+        if check_scraped_ids:
+            self.scraped_items_ids = self._get_scraped_ids()
+        logging.debug(self.__class__.__name__ + " scraper has been initialized.")
 
     @property
     def items(self):
@@ -22,17 +25,22 @@ class BaseScraper:
 
     @items.setter
     def items(self, value):
-        if self.scraped_items_ids:
+        if self.check_scraped_ids and self.scraped_items_ids:
             self._items = [item for item in value if item['id'] not in self.scraped_items_ids]
         else:
             self._items = value
         self.scraped_items_ids.extend([item['id'] for item in self.items])
 
-    def process_current_items(self):
-        self.items = self._get_next_items()
-        self._save_to_file()
+    def scrape_more_items(self, scrape_articles=True, save_to_file=False, delay=0.1):
+        self.items = self._get_next_items() if not scrape_articles else self._scrape_articles(self._get_next_items(),
+                                                                                              delay)
+        if save_to_file:
+            self._save_to_file()
 
     def _get_next_items(self):
+        raise NotImplementedError
+
+    def _scrape_articles(self, items, delay):
         raise NotImplementedError
 
     def _get_scraped_ids(self):

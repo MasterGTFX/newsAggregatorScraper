@@ -1,9 +1,9 @@
 import logging
 import time
 
-from scrapers.polsat_news import PolsatNews
-from scrapers.tvn24 import Tvn24
-from scrapers.tvp_info import TvpInfo
+from scraper.polsat_news import PolsatNews
+from scraper.tvn24 import Tvn24
+from scraper.tvp_info import TvpInfo
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
@@ -11,17 +11,17 @@ logging.basicConfig(level=logging.DEBUG,
                     filemode='a')
 logging.debug('- ' * 10 + 'use_scraper has been started ' + '- ' * 10)
 
-tvp_scraper = TvpInfo()
+tvp_scraper = TvpInfo(check_scraped_ids=True)
 while tvp_scraper.current_page <= 2:
-    tvp_scraper.process_current_items()
+    tvp_scraper.scrape_more_items(scrape_articles=True, save_to_file=True, delay=0.1)
     time.sleep(1)
 
-tvn_scraper = Tvn24()
+tvn_scraper = Tvn24(check_scraped_ids=True)
 while tvn_scraper.current_page <= 2:
-    tvn_scraper.process_current_items()
+    tvn_scraper.scrape_more_items(scrape_articles=False, save_to_file=True, delay=0.1)
     time.sleep(1)
 
-polsat_scraper = PolsatNews()
+polsat_scraper = PolsatNews(check_scraped_ids=True)
 while polsat_scraper.current_page <= 2:
-    polsat_scraper.process_current_items()
+    polsat_scraper.scrape_more_items(scrape_articles=False, save_to_file=True, delay=0.1)
     time.sleep(1)

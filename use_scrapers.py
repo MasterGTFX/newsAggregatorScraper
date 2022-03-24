@@ -18,10 +18,10 @@ while tvp_scraper.current_page <= 2:
 
 tvn_scraper = Tvn24(check_scraped_ids=True)
 while tvn_scraper.current_page <= 2:
-    tvn_scraper.scrape_more_items(scrape_articles=False, save_to_file=True, delay=0.1)
+    tvn_scraper.scrape_more_items(scrape_articles=True, save_to_file=True, delay=0.1)
     time.sleep(1)
 
 polsat_scraper = PolsatNews(check_scraped_ids=True)
 while polsat_scraper.current_page <= 2:
-    polsat_scraper.scrape_more_items(scrape_articles=False, save_to_file=True, delay=0.1)
+    polsat_scraper.scrape_more_items(scrape_articles=True, save_to_file=True, delay=0.1)
     time.sleep(1)

@@ -49,7 +49,7 @@ class TestTvpInfoScraper(unittest.TestCase):
         for field in fields:
             self.assertIn(field, self.scraper_with_items.items[0])
 
-    def test_article_fields_not_available_before_scraping(self):
+    def test_article_fields_not_available_before_scraping_article(self):
         article_field = ['article_title',
                          'heading',
                          'text',
@@ -57,7 +57,7 @@ class TestTvpInfoScraper(unittest.TestCase):
         for field in article_field:
             self.assertIsNone(self.scraper_with_items.items[0][field])
 
-    def test_article_fields_available_after_scraping(self):
+    def test_article_fields_available_after_scraping_article(self):
         article_field = ['article_title',
                          'heading',
                          'text',

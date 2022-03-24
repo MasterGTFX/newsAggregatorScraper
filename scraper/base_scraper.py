@@ -1,8 +1,9 @@
 import json
 import logging
 import os
-
-
+from fake_useragent import UserAgent
+import requests
+from requests.adapters import HTTPAdapter, Retry
 class BaseScraper:
     """
     Class to manage TvpInfo items
@@ -17,6 +18,11 @@ class BaseScraper:
         self.check_scraped_ids = check_scraped_ids
         if check_scraped_ids:
             self.scraped_items_ids = self._get_scraped_ids()
+        ua = UserAgent()
+        self.ua = ua.chrome
+        self.session = requests.Session()
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[500, 501, 502, 503, 504])
+        self.session.mount('https://', HTTPAdapter(max_retries=retries))
         logging.debug(self.__class__.__name__ + " scraper has been initialized.")
 
     @property

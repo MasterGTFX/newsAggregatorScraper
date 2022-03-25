@@ -17,8 +17,8 @@ class TvpInfo(BaseScraper):
     Class to manage TvpInfo items
     """
 
-    def __init__(self, check_scraped_ids=True):
-        super(TvpInfo, self).__init__(check_scraped_ids)
+    def __init__(self, check_scraped_ids=True, use_database=False):
+        super(TvpInfo, self).__init__(check_scraped_ids, use_database)
         base_items_page = BeautifulSoup(
             self.session.get('https://www.tvp.info/polska', headers={'User-Agent': self.ua}).text, 'html.parser')
         TvpInfo.total_items = int(re.search(r"\"items_total_count\" : (?P<count>[\d]+)", base_items_page.prettify())[
@@ -46,6 +46,7 @@ class TvpInfo(BaseScraper):
                   'article_title': None,
                   'heading': None,
                   'text': None,
+                  'source': "TvpInfo",
                   'author': None} for item in items]
         self.current_page += 1
         logging.debug("TvpInfo has finished scraping more items.")
@@ -65,11 +66,11 @@ class TvpInfo(BaseScraper):
                 [s for s in "".join([article_part.text for article_part in item_page.find_all('p', {
                     "class": 'am-article__text article__width'})]).strip().split("\n") if s]).replace(
                 '#wieszwiecejPolub nas', '')
-            time.sleep(2 * delay * random.random())
             logging.debug("TvpInfo finished scraping article.")
+            time.sleep(2 * delay * random.random())
         return items
 
 
 if __name__ == "__main__":
-    tvp_scraper = TvpInfo(check_scraped_ids=True)
-    tvp_scraper.scrape_more_items(scrape_articles=True, save_to_file=False)
+    tvp_scraper = TvpInfo(check_scraped_ids=True, use_database=True)
+    tvp_scraper.scrape_more_items(scrape_articles=True, save_to_db=True)

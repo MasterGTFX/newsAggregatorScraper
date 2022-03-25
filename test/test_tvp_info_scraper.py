@@ -7,12 +7,12 @@ class TestTvpInfoScraper(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.scraper_base = TvpInfo(check_scraped_ids=False)
+        cls.scraper_base = TvpInfo(check_scraped_ids=False, use_database=False)
 
-        cls.scraper_with_items = TvpInfo(check_scraped_ids=False)
+        cls.scraper_with_items = TvpInfo(check_scraped_ids=False, use_database=False)
         cls.scraper_with_items.scrape_more_items(scrape_articles=False, save_to_file=False)
 
-        cls.scraper_with_items_and_articles = TvpInfo(check_scraped_ids=False)
+        cls.scraper_with_items_and_articles = TvpInfo(check_scraped_ids=False, use_database=False)
         cls.scraper_with_items_and_articles.scrape_more_items(scrape_articles=True, save_to_file=False)
 
     def test_init_base_webpage_no_exceptions(self):
@@ -45,6 +45,7 @@ class TestTvpInfoScraper(unittest.TestCase):
                   'article_title',
                   'heading',
                   'text',
+                  'source',
                   'author']
         for field in fields:
             self.assertIn(field, self.scraper_with_items.items[0])

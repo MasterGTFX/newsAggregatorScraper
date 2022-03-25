@@ -14,13 +14,18 @@ class Tvn24(BaseScraper):
     Class to manage Tvn24 items
     """
 
-    def __init__(self, check_scraped_ids=True):
-        super(Tvn24, self).__init__(check_scraped_ids)
-        base_items_page = BeautifulSoup(self.session.get('https://tvn24.pl/polska', headers={'User-Agent': self.ua}).text,
-                                        'html.parser')
+    def __init__(self, check_scraped_ids=True, use_database=False):
+        super(Tvn24, self).__init__(check_scraped_ids, use_database)
+        base_items_page = BeautifulSoup(
+            self.session.get('https://tvn24.pl/polska', headers={'User-Agent': self.ua}).text,
+            'html.parser')
         Tvn24.total_items = float('inf')
         Tvn24.items_per_page = len(
-            [article for article in base_items_page.find_all('article') if article['data-article-title']])
+            [article for article in base_items_page.find_all('article')
+             if article['data-article-title']
+             and article['data-article-id']
+             and not '/premium/' in article.find('a')['href']
+             and not '/go/programy' in article.find('a')['href']])
         Tvn24.total_pages = float('inf')
         self.current_page = 1
 
@@ -29,13 +34,19 @@ class Tvn24(BaseScraper):
         if self.current_page >= Tvn24.total_pages:
             raise NoPagesLeftException
         items_page = BeautifulSoup(
-            self.session.get('https://tvn24.pl/polska/{}'.format(self.current_page), headers={'User-Agent': self.ua}).text,
+            self.session.get('https://tvn24.pl/polska/{}'.format(self.current_page),
+                             headers={'User-Agent': self.ua}).text,
             'html.parser')
-        articles = [article for article in items_page.find_all('article') if article['data-article-title']]
+        articles = [article for article in items_page.find_all('article')
+                    if article['data-article-title']
+                    and article['data-article-id']
+                    and not '/premium/' in article.find('a')['href']
+                    and not '/go/programy' in article.find('a')['href']]
         items = [{'id': article['data-article-id'],
                   'title': article['data-article-title'],
                   'url': article.find('a')['href'],
-                  'lead': article.find('div', {'class': 'article-lead'}).text,
+                  'lead': article.find('div', {'class': 'article-lead'}).text if article.find('div', {
+                      'class': 'article-lead'}) else None,
                   'img': None,
                   'img_title': None,
                   'time_released': None,
@@ -43,6 +54,7 @@ class Tvn24(BaseScraper):
                   'article_title': None,
                   'heading': None,
                   'text': None,
+                  'source': 'Tvn24',
                   'author': None} for article in articles]
         self.current_page += 1
         logging.debug("Tvn24 has finished scraping more items.")
@@ -50,11 +62,12 @@ class Tvn24(BaseScraper):
 
     def _scrape_articles(self, items, delay=0.1):
         for item in items:
-            logging.debug("TvpInfo has started scraping article: {}...".format(item['title']))
+            logging.debug("Tvn24 has started scraping article: {}...".format(item['title']))
             if item['id'] in self.scraped_items_ids and self.check_scraped_ids:
                 logging.debug("Article already scraped, skipping.")
                 continue
-            item_page = BeautifulSoup(self.session.get(item['url'], headers={'User-Agent': self.ua}).text, 'html.parser')
+            item_page = BeautifulSoup(self.session.get(item['url'], headers={'User-Agent': self.ua}).text,
+                                      'html.parser')
             article = item_page.find('article')
             item['time_released'] = (datetime.datetime.strptime(
                 article.find('time', {'class': 'article-top-bar__date'})['datetime'].replace("Z", ""),
@@ -68,8 +81,8 @@ class Tvn24(BaseScraper):
             item['text'] = "\n".join([s for s in "\n".join(
                 [paragraph.text for paragraph in articles_part[1:][:len(articles_part) - 4]]).strip().split('\n') if s])
             item['author'] = article.find('div', {'class': 'author-first-name'}).text
+            logging.debug("Tvn24 finished scraping article.")
             time.sleep(2 * delay * random.random())
-            logging.debug("TvpInfo finished scraping article.")
         return items
 
 

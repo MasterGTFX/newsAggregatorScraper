@@ -1,1 +1,1 @@
-# newsAggregator
+# newsAggregatorScraper

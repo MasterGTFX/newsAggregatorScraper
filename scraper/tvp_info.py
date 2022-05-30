@@ -32,21 +32,24 @@ class TvpInfo(BaseScraper):
         logging.debug("TvpInfo has started scraping more items...")
         if self.current_page >= TvpInfo.total_pages:
             raise NoPagesLeftException
-        items_page = BeautifulSoup(self.session.get('https://www.tvp.info/polska?page={}'.format(self.current_page), headers={'User-Agent': self.ua}).text,
+        items_page = BeautifulSoup(self.session.get('https://www.tvp.info/polska?page={}'.format(self.current_page),
+                                                    headers={'User-Agent': self.ua}).text,
                                    'html.parser')
         items = json.loads(items_page.prettify().split("\"items\":")[1].split(",\n\"items_total_count\"")[0])
-        items = [{'id': item['id'],
+        items = [{'id': int('1' + str(item['id'])),
                   'title': item['title'],
                   'url': 'https://www.tvp.info' + item['url'],
                   'lead': item['lead'],
                   'img': item['image']['url'],
                   'img_title': item['image']['title'],
-                  'time_released': datetime.fromtimestamp(int(item['publication_start'])/1000).strftime('%Y-%m-%d %H:%M:%S'),
-                  'time_updated': datetime.fromtimestamp(int(item['release_date'])/1000).strftime('%Y-%m-%d %H:%M:%S'),
+                  'time_released': datetime.fromtimestamp(int(item['publication_start']) / 1000).strftime(
+                      '%Y-%m-%d %H:%M:%S'),
+                  'time_updated': datetime.fromtimestamp(int(item['release_date']) / 1000).strftime(
+                      '%Y-%m-%d %H:%M:%S'),
                   'article_title': None,
                   'heading': None,
                   'text': None,
-                  'source': "TvpInfo",
+                  'source': 'TvpInfo',
                   'author': None} for item in items]
         self.current_page += 1
         logging.debug("TvpInfo has finished scraping more items.")
@@ -58,9 +61,11 @@ class TvpInfo(BaseScraper):
             if item['id'] in self.scraped_items_ids and self.check_scraped_ids:
                 logging.debug("Article already scraped, skipping.")
                 continue
-            item_page = BeautifulSoup(self.session.get(item['url'], headers={'User-Agent': self.ua}).text, 'html.parser')
+            item_page = BeautifulSoup(self.session.get(item['url'], headers={'User-Agent': self.ua}).text,
+                                      'html.parser')
             item['article_title'] = item_page.find('div', {"class": 'layout-article'}).h1.text
-            item['author'] = item_page.find('div', {"class": 'info-article__date'}).span.text
+            item['author'] = item_page.find('div', {"class": 'info-article__date'}).span.text if item_page.find('div', {
+                "class": 'info-article__date'}).span else None
             item['heading'] = item_page.find('p', {"class": 'am-article__heading article__width'}).b.text
             item['text'] = "\n".join(
                 [s for s in "".join([article_part.text for article_part in item_page.find_all('p', {
@@ -73,4 +78,5 @@ class TvpInfo(BaseScraper):
 
 if __name__ == "__main__":
     tvp_scraper = TvpInfo(check_scraped_ids=True, use_database=True)
+    print(tvp_scraper._get_scraped_ids())
     tvp_scraper.scrape_more_items(scrape_articles=True, save_to_db=True)

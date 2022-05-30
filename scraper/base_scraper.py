@@ -94,7 +94,7 @@ class BaseScraper:
         else:
             with self.database() as cursor:
                 try:
-                    cursor.execute('SELECT id FROM articles;')
+                    cursor.execute('SELECT id FROM articles_article WHERE source=\'{}\';'.format(self.__class__.__name__))
                     ids = [item[0] for item in cursor.fetchall()]
                     return ids
                 except psycopg2.ProgrammingError as err:
@@ -118,7 +118,7 @@ class BaseScraper:
     def _save_to_db(self):
         with self.database() as cursor:
             for item in self.items:
-                cursor.execute('INSERT INTO articles (id, title, url, lead, img, img_title,time_released, '
+                cursor.execute('INSERT INTO articles_article (id, title, url, lead, img, img_title,time_released, '
                                'time_updated, heading, article_title, text, author, source) '
                                'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
                                (item['id'], item['title'], item['url'], item['lead'], item['img'], item['img_title'],

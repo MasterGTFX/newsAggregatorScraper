@@ -37,9 +37,10 @@ class PolsatNews(BaseScraper):
         items_page = BeautifulSoup(self.session.get(
             'https://www.polsatnews.pl/wyszukiwarka/?text=Polska&type=event&page={}'.format(self.current_page),
             headers={'User-Agent': self.ua}).text, 'html.parser')
-        articles = [article for article in items_page.find_all('article')]
+        articles = [article for article in items_page.find_all('article') if 'polsat.pl' not in article.find('a')['href']]
         items = [
-            {'id': int(sha256(article.find('a')['href'].encode('utf-8', errors='ignore')).hexdigest(), 16) % 10 ** 8,
+            {'id': int('3' + str(
+                int(sha256(article.find('a')['href'].encode('utf-8', errors='ignore')).hexdigest(), 16) % 10 ** 8)),
              'title': article.find('h2', {'class': 'news__title'}).text,
              'url': article.find('a')['href'],
              'lead': None,

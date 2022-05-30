@@ -42,7 +42,7 @@ class Tvn24(BaseScraper):
                     and article['data-article-id']
                     and not '/premium/' in article.find('a')['href']
                     and not '/go/programy' in article.find('a')['href']]
-        items = [{'id': article['data-article-id'],
+        items = [{'id': int('2' + str(article['data-article-id'])),
                   'title': article['data-article-title'],
                   'url': article.find('a')['href'],
                   'lead': article.find('div', {'class': 'article-lead'}).text if article.find('div', {
@@ -80,7 +80,10 @@ class Tvn24(BaseScraper):
                 'class': 'article-element'})
             item['text'] = "\n".join([s for s in "\n".join(
                 [paragraph.text for paragraph in articles_part[1:][:len(articles_part) - 4]]).strip().split('\n') if s])
-            item['author'] = article.find('div', {'class': 'author-first-name'}).text
+            item['author'] = article.find('div', {'class': 'author-first-name'}).text if article.find('div', {
+                'class': 'author-first-name'}) else ""
+            item['img'] = article.find('img', {'class': "nuvi-player__poster"})['src'] if article.find('img', {'class': "nuvi-player__poster"}) else article.find('img', {'class': "image-component__image media-content__image"})['srcset'].split(' ')[-3].split(',')[1]
+            item['img_title'] = article.find('img', {'class': "nuvi-player__poster"})['alt'] if article.find('img', {'class': "nuvi-player__poster"}) else ''
             logging.debug("Tvn24 finished scraping article.")
             time.sleep(2 * delay * random.random())
         return items

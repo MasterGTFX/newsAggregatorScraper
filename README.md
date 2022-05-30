@@ -17,7 +17,7 @@ Scraping news articles from **PolsatNews**, **Tvn24** and **TvpInfo**. Following
 * source
 
 ## Technologies
-Project is created with Python, mainly using requests and BeautifulSoup for scraping
+Project is created with Python, mainly using requests and BeautifulSoup for scraping.
 
 ## Setup
 To run this project just run python use_scrapers.py. You can use options to either save it to file or database.
